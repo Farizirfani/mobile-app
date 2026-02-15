@@ -50,14 +50,14 @@ export const Colors = {
 };
 
 // Subject icon colors for course cards
-export const SubjectColors: Record<string, { bg: string; text: string }> = {
-  Mathematics: { bg: '#EEF2FF', text: '#4A6CF7' },
-  Biology: { bg: '#F0FDF4', text: '#22C55E' },
-  Chemistry: { bg: '#FFF7ED', text: '#F59E0B' },
-  Physics: { bg: '#FDF2F8', text: '#EC4899' },
-  History: { bg: '#FFFBEB', text: '#D97706' },
-  English: { bg: '#EFF6FF', text: '#3B82F6' },
-  default: { bg: '#F1F5F9', text: '#64748B' },
+export const SubjectColors: Record<string, { bg: string; text: string; darkBg?: string }> = {
+  Mathematics: { bg: '#EEF2FF', text: '#4A6CF7', darkBg: 'rgba(74, 108, 247, 0.15)' },
+  Biology: { bg: '#F0FDF4', text: '#22C55E', darkBg: 'rgba(34, 197, 94, 0.15)' },
+  Chemistry: { bg: '#FFF7ED', text: '#F59E0B', darkBg: 'rgba(245, 158, 11, 0.15)' },
+  Physics: { bg: '#FDF2F8', text: '#EC4899', darkBg: 'rgba(236, 72, 153, 0.15)' },
+  History: { bg: '#FFFBEB', text: '#D97706', darkBg: 'rgba(217, 119, 6, 0.15)' },
+  English: { bg: '#EFF6FF', text: '#3B82F6', darkBg: 'rgba(59, 130, 246, 0.15)' },
+  default: { bg: '#F1F5F9', text: '#64748B', darkBg: 'rgba(100, 116, 139, 0.15)' },
 };
 
 export const Fonts = Platform.select({

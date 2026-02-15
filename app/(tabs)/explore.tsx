@@ -1,7 +1,8 @@
-import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { BorderRadius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     ScrollView,
@@ -14,21 +15,49 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ExploreScreen() {
   const { user } = useAuth();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, colors } = useTheme();
+  const router = useRouter(); 
 
   const myStuffItems = [
-    { icon: 'bookmark' as const, label: 'Bookmarks', desc: 'Saved items', color: '#4A6CF7', bg: '#EEF2FF' },
-    { icon: 'document-text' as const, label: 'Notes', desc: 'Your study notes', color: '#22C55E', bg: '#F0FDF4' },
-    { icon: 'trophy' as const, label: 'Quiz Results', desc: 'Your scores', color: '#F59E0B', bg: '#FFF7ED' },
-    { icon: 'stats-chart' as const, label: 'Progress', desc: 'Track progress', color: '#EC4899', bg: '#FDF2F8' },
+    { 
+        icon: 'bookmark' as const, 
+        label: 'Bookmarks', 
+        desc: 'Saved items', 
+        color: '#4A6CF7', 
+        bg: '#EEF2FF', 
+        route: '/my-stuff/bookmarks' 
+    },
+    { 
+        icon: 'document-text' as const, 
+        label: 'Notes', 
+        desc: 'Your study notes', 
+        color: '#22C55E', 
+        bg: '#F0FDF4',
+        route: '/my-stuff/notes'
+    },
+    { 
+        icon: 'trophy' as const, 
+        label: 'Quiz Results', 
+        desc: 'Your scores', 
+        color: '#F59E0B', 
+        bg: '#FFF7ED',
+        route: '/my-stuff/quizzes'
+    },
+    { 
+        icon: 'stats-chart' as const, 
+        label: 'Progress', 
+        desc: 'Track progress', 
+        color: '#EC4899', 
+        bg: '#FDF2F8',
+        route: '/my-stuff/progress'
+    },
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <Text style={[styles.pageTitle, { color: theme.text }]}>My Stuff</Text>
-        <Text style={[styles.pageSubtitle, { color: theme.textSecondary }]}>
+        <Text style={[styles.pageTitle, { color: colors.text }]}>My Stuff</Text>
+        <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
           Quick access to your learning materials
         </Text>
 
@@ -36,23 +65,24 @@ export default function ExploreScreen() {
           {myStuffItems.map((item) => (
             <TouchableOpacity
               key={item.label}
-              style={[styles.gridItem, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}
+              style={[styles.gridItem, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}
               activeOpacity={0.7}
+              onPress={() => router.push(item.route as any)}
             >
               <View style={[styles.gridIconBg, { backgroundColor: item.bg }]}>
                 <Ionicons name={item.icon} size={26} color={item.color} />
               </View>
-              <Text style={[styles.gridLabel, { color: theme.text }]}>{item.label}</Text>
-              <Text style={[styles.gridDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
+              <Text style={[styles.gridLabel, { color: colors.text }]}>{item.label}</Text>
+              <Text style={[styles.gridDesc, { color: colors.textSecondary }]}>{item.desc}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Recent Activity placeholder */}
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
-        <View style={[styles.emptyState, { backgroundColor: theme.surface }]}>
-          <Ionicons name="time-outline" size={40} color={theme.textTertiary} />
-          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</Text>
+        <View style={[styles.emptyState, { backgroundColor: colors.surface }]}>
+          <Ionicons name="time-outline" size={40} color={colors.textTertiary} />
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             Your recent activity will appear here
           </Text>
         </View>

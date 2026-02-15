@@ -1,6 +1,7 @@
 import api from './api';
 
 export interface Course {
+  [x: string]: unknown;
   _id: string;
   title: string;
   subtitle: string;

@@ -1,5 +1,5 @@
 import { BorderRadius, Colors, Spacing, SubjectColors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Course, getCourses } from '@/services/courses';
 import { getProgress, Progress } from '@/services/progress';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,7 +11,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -19,8 +19,7 @@ const CATEGORIES = ['All Subjects', 'Science', 'Mathematics', 'Languages'];
 
 export default function CoursesScreen() {
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, colors, isDark } = useTheme();
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, Progress>>({});
@@ -64,7 +63,7 @@ export default function CoursesScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
@@ -76,21 +75,21 @@ export default function CoursesScreen() {
             <View style={styles.logoIcon}>
               <Text style={styles.logoLetter}>E</Text>
             </View>
-            <Text style={[styles.logoText, { color: theme.text }]}>EduFocus</Text>
+            <Text style={[styles.logoText, { color: colors.text }]}>EduFocus</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.surfaceSecondary }]}>
-              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="notifications-outline" size={20} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: theme.surfaceSecondary }]}>
-              <Ionicons name="bookmark-outline" size={20} color={theme.text} />
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="bookmark-outline" size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Title */}
-        <Text style={[styles.pageTitle, { color: theme.text }]}>Course Library</Text>
-        <Text style={[styles.pageSubtitle, { color: theme.textSecondary }]}>
+        <Text style={[styles.pageTitle, { color: colors.text }]}>Course Library</Text>
+        <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
           Explore your subjects and track your progress
         </Text>
 
@@ -108,13 +107,13 @@ export default function CoursesScreen() {
                 styles.categoryTab,
                 selectedCategory === cat
                   ? { backgroundColor: Colors.primary }
-                  : { backgroundColor: theme.surfaceSecondary },
+                  : { backgroundColor: colors.surfaceSecondary },
               ]}
               onPress={() => setSelectedCategory(cat)}
             >
               <Text style={[
                 styles.categoryText,
-                { color: selectedCategory === cat ? '#fff' : theme.textSecondary },
+                { color: selectedCategory === cat ? '#fff' : colors.textSecondary },
               ]}>
                 {cat}
               </Text>
@@ -128,16 +127,18 @@ export default function CoursesScreen() {
           const percentage = progress?.percentage || 0;
           const status = getStatusLabel(progress?.status);
           const subjectColor = SubjectColors[course.subject] || SubjectColors.default;
+          // Use darkBg if in dark mode and available, else fallback to bg
+          const bgColor = (isDark && subjectColor.darkBg) ? subjectColor.darkBg : subjectColor.bg;
 
           return (
             <TouchableOpacity
               key={course._id}
-              style={[styles.courseCard, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}
+              style={[styles.courseCard, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}
               onPress={() => router.push(`/course/${course._id}`)}
               activeOpacity={0.7}
             >
               <View style={styles.courseContent}>
-                <View style={[styles.courseIcon, { backgroundColor: subjectColor.bg }]}>
+                <View style={[styles.courseIcon, { backgroundColor: bgColor }]}>
                   <Ionicons
                     name={
                       course.subject === 'Mathematics' ? 'calculator' :
@@ -153,17 +154,17 @@ export default function CoursesScreen() {
                   />
                 </View>
                 <View style={styles.courseInfo}>
-                  <Text style={[styles.courseTitle, { color: theme.text }]}>{course.title}</Text>
-                  <Text style={[styles.courseSubtitle, { color: theme.textSecondary }]}>{course.subtitle}</Text>
+                  <Text style={[styles.courseTitle, { color: colors.text }]}>{course.title}</Text>
+                  <Text style={[styles.courseSubtitle, { color: colors.textSecondary }]}>{course.subtitle}</Text>
 
                   <View style={styles.statusRow}>
                     <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
                       <Text style={[styles.statusText, { color: status.color }]}>{status.text}</Text>
                     </View>
-                    <Text style={[styles.percentText, { color: theme.textSecondary }]}>{percentage}%</Text>
+                    <Text style={[styles.percentText, { color: colors.textSecondary }]}>{percentage}%</Text>
                   </View>
 
-                  <View style={[styles.courseProgressBg, { backgroundColor: theme.progressBg }]}>
+                  <View style={[styles.courseProgressBg, { backgroundColor: colors.progressBg }]}>
                     <View style={[styles.courseProgressFill, {
                       width: `${percentage}%`,
                       backgroundColor: status.color,
@@ -181,7 +182,7 @@ export default function CoursesScreen() {
                         }]} />
                       ))}
                     </View>
-                    <Text style={[styles.studentsText, { color: theme.textTertiary }]}>
+                    <Text style={[styles.studentsText, { color: colors.textTertiary }]}>
                       +52 classmates
                     </Text>
                   </View>
@@ -193,10 +194,10 @@ export default function CoursesScreen() {
 
         {/* Load More */}
         <TouchableOpacity
-          style={[styles.loadMoreButton, { borderColor: theme.border }]}
+          style={[styles.loadMoreButton, { borderColor: colors.border }]}
           activeOpacity={0.7}
         >
-          <Text style={[styles.loadMoreText, { color: theme.textSecondary }]}>Load More Courses</Text>
+          <Text style={[styles.loadMoreText, { color: colors.textSecondary }]}>Load More Courses</Text>
         </TouchableOpacity>
 
         <View style={{ height: 20 }} />

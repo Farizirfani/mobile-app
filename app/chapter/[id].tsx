@@ -1,10 +1,10 @@
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Chapter, getChapterById } from '@/services/chapters';
 import { Course, getCourseById } from '@/services/courses';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -19,8 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ChapterDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, colors, isDark } = useTheme();
 
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
@@ -51,7 +50,7 @@ export default function ChapterDetailScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -61,18 +60,19 @@ export default function ChapterDetailScreen() {
   const contentParagraphs = chapter?.content?.split('\n\n') || [];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <View style={styles.logoRow}>
             <View style={styles.logoIcon}>
               <Text style={styles.logoLetter}>E</Text>
             </View>
-            <Text style={[styles.logoText, { color: theme.text }]}>EduFocus</Text>
+            <Text style={[styles.logoText, { color: colors.text }]}>EduFocus</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -82,7 +82,7 @@ export default function ChapterDetailScreen() {
           <Ionicons
             name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
             size={22}
-            color={isBookmarked ? Colors.primary : theme.text}
+            color={isBookmarked ? Colors.primary : colors.text}
           />
         </TouchableOpacity>
       </View>
@@ -95,18 +95,18 @@ export default function ChapterDetailScreen() {
               {course?.subject?.toUpperCase() || 'COURSE'}
             </Text>
           </TouchableOpacity>
-          <Ionicons name="chevron-forward" size={14} color={theme.textTertiary} />
-          <Text style={[styles.breadcrumbText, { color: theme.textSecondary }]}>
+          <Ionicons name="chevron-forward" size={14} color={colors.textTertiary} />
+          <Text style={[styles.breadcrumbText, { color: colors.textSecondary }]}>
             Chapter {chapter?.order}
           </Text>
         </View>
 
         {/* Title */}
-        <Text style={[styles.chapterTitle, { color: theme.text }]}>{chapter?.title}</Text>
+        <Text style={[styles.chapterTitle, { color: colors.text }]}>{chapter?.title}</Text>
 
         {/* Content */}
         {contentParagraphs.map((paragraph, index) => (
-          <Text key={index} style={[styles.paragraph, { color: theme.text }]}>
+          <Text key={index} style={[styles.paragraph, { color: colors.text }]}>
             {paragraph}
           </Text>
         ))}
@@ -119,18 +119,49 @@ export default function ChapterDetailScreen() {
               style={styles.contentImage}
               contentFit="cover"
             />
-            <Text style={[styles.imageCaption, { color: theme.textTertiary }]}>
+            <Text style={[styles.imageCaption, { color: colors.textTertiary }]}>
               Figure {chapter.order}.1
             </Text>
           </View>
         ) : null}
 
         {/* Reading time */}
-        <View style={[styles.readingInfo, { backgroundColor: theme.surfaceSecondary }]}>
-          <Ionicons name="time-outline" size={16} color={theme.textSecondary} />
-          <Text style={[styles.readingTime, { color: theme.textSecondary }]}>
+        <View style={[styles.readingInfo, { backgroundColor: colors.surfaceSecondary }]}>
+          <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
+          <Text style={[styles.readingTime, { color: colors.textSecondary }]}>
             {chapter?.readingTime || '15 min read'}
           </Text>
+        </View>
+
+        {/* Actions */}
+        <View style={styles.actionButtons}>
+            <TouchableOpacity 
+                style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push(`/chapter/${id}/quiz`)}
+            >
+                <View style={[styles.actionIcon, { backgroundColor: Colors.primaryLight }]}>
+                    <Ionicons name="help-circle" size={24} color={Colors.primary} />
+                </View>
+                <View>
+                    <Text style={[styles.actionTitle, { color: colors.text }]}>Take Quiz</Text>
+                    <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Test your knowledge</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+                style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push(`/chapter/${id}/note`)}
+            >
+                <View style={[styles.actionIcon, { backgroundColor: colors.surfaceSecondary }]}>
+                    <Ionicons name="document-text" size={24} color={colors.text} />
+                </View>
+                <View>
+                    <Text style={[styles.actionTitle, { color: colors.text }]}>My Notes</Text>
+                    <Text style={[styles.actionSubtitle, { color: colors.textSecondary }]}>Capture your thoughts</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
         </View>
 
         <View style={{ height: 40 }} />
@@ -229,4 +260,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
+  actionButtons: { marginTop: Spacing.xl, gap: Spacing.md },
+  actionBtn: {
+      flexDirection: 'row', alignItems: 'center', gap: Spacing.md,
+      padding: Spacing.md, borderRadius: BorderRadius.lg, borderWidth: 1,
+  },
+  actionIcon: {
+      width: 48, height: 48, borderRadius: 12,
+      justifyContent: 'center', alignItems: 'center',
+  },
+  actionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  actionSubtitle: { fontSize: 12 },
 });

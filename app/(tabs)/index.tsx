@@ -1,18 +1,18 @@
 import { BorderRadius, Colors, Spacing, SubjectColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { DashboardData, getDashboard } from '@/services/dashboard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,8 +21,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function HomeScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, colors, isDark } = useTheme();
 
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,7 +60,7 @@ export default function HomeScreen() {
   const maxStudy = Math.max(...studyData);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
@@ -69,18 +68,15 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View style={styles.headerRow}>
-          <TouchableOpacity>
-            <Ionicons name="menu" size={26} color={theme.text} />
-          </TouchableOpacity>
           <View style={styles.headerCenter}>
-            <Text style={[styles.greeting, { color: theme.text }]}>
+            <Text style={[styles.greeting, { color: colors.text }]}>
               Welcome back, {user?.name?.split(' ')[0] || 'Student'}!
             </Text>
-            <Text style={[styles.dateText, { color: theme.textSecondary }]}>{dateStr}</Text>
+            <Text style={[styles.dateText, { color: colors.textSecondary }]}>{dateStr}</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={[styles.notifButton, { backgroundColor: theme.surfaceSecondary }]}>
-              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+            <TouchableOpacity style={[styles.notifButton, { backgroundColor: colors.surfaceSecondary }]}>
+              <Ionicons name="notifications-outline" size={20} color={colors.text} />
             </TouchableOpacity>
             <View style={[styles.avatarCircle, { backgroundColor: Colors.primary }]}>
               <Text style={styles.avatarText}>{user?.name?.[0] || 'S'}</Text>
@@ -89,19 +85,19 @@ export default function HomeScreen() {
         </View>
 
         {/* Exam Readiness Card */}
-        <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
           <View style={styles.examHeader}>
             <View>
-              <Text style={[styles.examTitle, { color: theme.text }]}>Exam Readiness</Text>
-              <Text style={[styles.examSubtitle, { color: theme.textSecondary }]}>You're doing great!</Text>
+              <Text style={[styles.examTitle, { color: colors.text }]}>Exam Readiness</Text>
+              <Text style={[styles.examSubtitle, { color: colors.textSecondary }]}>You're doing great!</Text>
             </View>
-            <View style={[styles.examIconBg, { backgroundColor: '#EEF2FF' }]}>
+            <View style={[styles.examIconBg, { backgroundColor: isDark ? 'rgba(74, 108, 247, 0.15)' : '#EEF2FF' }]}>
               <Ionicons name="school" size={20} color={Colors.primary} />
             </View>
           </View>
           <View style={styles.examRingContainer}>
             <View style={styles.ringOuter}>
-              <View style={[styles.ringTrack, { borderColor: theme.progressBg }]} />
+              <View style={[styles.ringTrack, { borderColor: colors.progressBg }]} />
               <View style={[styles.ringProgress, {
                 borderColor: Colors.primary,
                 borderTopColor: 'transparent',
@@ -110,13 +106,13 @@ export default function HomeScreen() {
                 borderLeftColor: examReadiness > 75 ? Colors.primary : 'transparent',
                 transform: [{ rotate: `${(examReadiness / 100) * 360}deg` }],
               }]} />
-              <View style={[styles.ringInner, { backgroundColor: theme.surface }]}>
+              <View style={[styles.ringInner, { backgroundColor: colors.surface }]}>
                 <Text style={[styles.ringPercent, { color: Colors.primary }]}>{examReadiness}%</Text>
               </View>
             </View>
           </View>
           <View style={styles.examFooter}>
-            <View style={[styles.changeBadge, { backgroundColor: '#ECFDF5' }]}>
+            <View style={[styles.changeBadge, { backgroundColor: isDark ? 'rgba(34, 197, 94, 0.15)' : '#ECFDF5' }]}>
               <Text style={{ color: '#22C55E', fontSize: 13, fontWeight: '600' }}>+12% from last week</Text>
             </View>
           </View>
@@ -125,19 +121,19 @@ export default function HomeScreen() {
         {/* Continue Reading */}
         {dashboard?.continueReading && (
           <TouchableOpacity
-            style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}
+            style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}
             onPress={() => router.push(`/chapter/${dashboard.continueReading.chapter?._id}`)}
             activeOpacity={0.7}
           >
             <View style={styles.readingHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
                 {dashboard.continueReading.chapter?.title || 'Bab 3: Biologi Sel'}
               </Text>
               <TouchableOpacity>
                 <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 14 }}>Continue Reading →</Text>
               </TouchableOpacity>
             </View>
-            <Text style={[styles.readingContent, { color: theme.textSecondary }]} numberOfLines={3}>
+            <Text style={[styles.readingContent, { color: colors.textSecondary }]} numberOfLines={3}>
               {dashboard.continueReading.chapter?.content ||
                 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'}
             </Text>
@@ -145,14 +141,14 @@ export default function HomeScreen() {
               <Text style={{ color: Colors.primary, fontSize: 13, fontWeight: '600' }}>
                 Chapter {dashboard.continueReading.chapter?.order || 3}
               </Text>
-              <Text style={{ color: theme.textTertiary, fontSize: 13 }}>
+              <Text style={{ color: colors.textTertiary, fontSize: 13 }}>
                 {dashboard.continueReading.chapter?.readingTime || '15 min read'}
               </Text>
             </View>
             <View style={styles.progressBarContainer}>
-              <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Progress</Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
               <View style={styles.progressBarRow}>
-                <View style={[styles.progressBarBg, { backgroundColor: theme.progressBg }]}>
+                <View style={[styles.progressBarBg, { backgroundColor: colors.progressBg }]}>
                   <View
                     style={[styles.progressBarFill, {
                       width: `${dashboard.continueReading.progress || 45}%`,
@@ -160,7 +156,7 @@ export default function HomeScreen() {
                     }]}
                   />
                 </View>
-                <Text style={[styles.progressPercent, { color: theme.textSecondary }]}>
+                <Text style={[styles.progressPercent, { color: colors.textSecondary }]}>
                   {dashboard.continueReading.progress || 45}%
                 </Text>
               </View>
@@ -170,22 +166,25 @@ export default function HomeScreen() {
 
         {/* Continue Learning */}
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Continue Learning</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Continue Learning</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/courses')}>
-            <Text style={{ color: theme.textTertiary, fontSize: 14 }}>View All</Text>
+            <Text style={{ color: colors.textTertiary, fontSize: 14 }}>View All</Text>
           </TouchableOpacity>
         </View>
         {(dashboard?.continueLearning || []).slice(0, 3).map((item, index) => {
           const subject = item.course?.subject || 'default';
           const subjectColor = SubjectColors[subject] || SubjectColors.default;
+          // Use darkBg if in dark mode and available, else fallback to bg
+          const bgColor = (isDark && subjectColor.darkBg) ? subjectColor.darkBg : subjectColor.bg;
+          
           return (
             <TouchableOpacity
               key={item.course?._id || index}
-              style={[styles.learningItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[styles.learningItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() => router.push(`/course/${item.course?._id}`)}
               activeOpacity={0.7}
             >
-              <View style={[styles.subjectIcon, { backgroundColor: subjectColor.bg }]}>
+              <View style={[styles.subjectIcon, { backgroundColor: bgColor }]}>
                 <Ionicons
                   name={
                     subject === 'Mathematics' ? 'calculator' :
@@ -199,8 +198,8 @@ export default function HomeScreen() {
                 />
               </View>
               <View style={styles.learningInfo}>
-                <Text style={[styles.learningTitle, { color: theme.text }]}>{item.course?.title}</Text>
-                <View style={[styles.learningProgressBg, { backgroundColor: theme.progressBg }]}>
+                <Text style={[styles.learningTitle, { color: colors.text }]}>{item.course?.title}</Text>
+                <View style={[styles.learningProgressBg, { backgroundColor: colors.progressBg }]}>
                   <View
                     style={[styles.learningProgressFill, {
                       width: `${item.percentage}%`,
@@ -209,26 +208,26 @@ export default function HomeScreen() {
                   />
                 </View>
               </View>
-              <Text style={[styles.learningPercent, { color: theme.textSecondary }]}>{item.percentage}%</Text>
+              <Text style={[styles.learningPercent, { color: colors.textSecondary }]}>{item.percentage}%</Text>
               <TouchableOpacity>
-                <Ionicons name="ellipsis-vertical" size={18} color={theme.textTertiary} />
+                <Ionicons name="ellipsis-vertical" size={18} color={colors.textTertiary} />
               </TouchableOpacity>
             </TouchableOpacity>
           );
         })}
 
         {/* Study Hours */}
-        <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow, marginTop: Spacing.xl }]}>
+        <View style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.cardShadow, marginTop: Spacing.xl }]}>
           <View style={styles.studyHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Study Hours</Text>
-            <View style={[styles.weeklyBadge, { backgroundColor: theme.surfaceSecondary }]}>
-              <Text style={{ color: theme.textSecondary, fontSize: 12, fontWeight: '600' }}>Weekly ▾</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Study Hours</Text>
+            <View style={[styles.weeklyBadge, { backgroundColor: colors.surfaceSecondary }]}>
+              <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '600' }}>Weekly ▾</Text>
             </View>
           </View>
           <View style={styles.chartContainer}>
             {weekDays.map((day, i) => (
               <View key={i} style={styles.barColumn}>
-                <View style={[styles.barBg, { backgroundColor: theme.progressBg }]}>
+                <View style={[styles.barBg, { backgroundColor: colors.progressBg }]}>
                   <View style={[styles.barFill, {
                     height: `${(studyData[i] / maxStudy) * 100}%`,
                     backgroundColor: i === 2 ? Colors.primary : Colors.primaryLight,
@@ -236,7 +235,7 @@ export default function HomeScreen() {
                   }]} />
                 </View>
                 <Text style={[styles.barLabel, {
-                  color: i === 2 ? Colors.primary : theme.textTertiary,
+                  color: i === 2 ? Colors.primary : colors.textTertiary,
                   fontWeight: i === 2 ? '700' : '500',
                 }]}>{day}</Text>
               </View>

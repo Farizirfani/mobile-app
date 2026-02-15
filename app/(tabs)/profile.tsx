@@ -1,11 +1,13 @@
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
     ScrollView,
     StyleSheet,
+    Switch,
     Text,
     TouchableOpacity,
     View,
@@ -14,62 +16,78 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, toggleTheme, colors, isDark } = useTheme();
+  const router = useRouter();
 
   const menuItems = [
-    { icon: 'person-outline' as const, label: 'Edit Profile', action: () => {} },
+    { icon: 'person-outline' as const, label: 'Edit Profile', action: () => router.push('/profile/edit') },
     { icon: 'notifications-outline' as const, label: 'Notifications', action: () => {} },
-    { icon: 'bookmark-outline' as const, label: 'Bookmarks', action: () => {} },
+    { icon: 'bookmark-outline' as const, label: 'Bookmarks', action: () => router.push('/my-stuff/bookmarks') },
     { icon: 'shield-checkmark-outline' as const, label: 'Privacy', action: () => {} },
     { icon: 'help-circle-outline' as const, label: 'Help & Support', action: () => {} },
     { icon: 'information-circle-outline' as const, label: 'About', action: () => {} },
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
-        <Text style={[styles.pageTitle, { color: theme.text }]}>Profile</Text>
+        <Text style={[styles.pageTitle, { color: colors.text }]}>Profile</Text>
 
         {/* Avatar Card */}
-        <View style={[styles.profileCard, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}>
+        <View style={[styles.profileCard, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
           <View style={[styles.avatarCircle, { backgroundColor: Colors.primary }]}>
             <Text style={styles.avatarText}>{user?.name?.[0] || 'S'}</Text>
           </View>
-          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Student'}</Text>
-          <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{user?.email || 'email@example.com'}</Text>
-          <View style={[styles.gradeBadge, { backgroundColor: '#EEF2FF' }]}>
+          <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'Student'}</Text>
+          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email || 'email@example.com'}</Text>
+          <View style={[styles.gradeBadge, { backgroundColor: isDark ? '#1e293b' : '#EEF2FF' }]}>
             <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 13 }}>
               Grade {user?.grade || '12'} • {user?.role || 'Student'}
             </Text>
           </View>
         </View>
 
+        {/* Theme Toggles */}
+        <View style={[styles.menuCard, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
+             <View style={styles.menuItem}>
+                 <View style={[styles.menuIconBg, { backgroundColor: colors.surfaceSecondary }]}>
+                     <Ionicons name="moon-outline" size={20} color={colors.textSecondary} />
+                 </View>
+                 <Text style={[styles.menuLabel, { color: colors.text }]}>Dark Mode</Text>
+                 <Switch 
+                    value={isDark} 
+                    onValueChange={toggleTheme} 
+                    trackColor={{ false: '#767577', true: Colors.primary }}
+                    thumbColor={isDark ? '#fff' : '#f4f3f4'}
+                />
+             </View>
+        </View>
+
         {/* Menu Items */}
-        <View style={[styles.menuCard, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}>
+        <View style={[styles.menuCard, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={item.label}
               style={[
                 styles.menuItem,
-                index < menuItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: theme.border },
+                index < menuItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
               ]}
               onPress={item.action}
               activeOpacity={0.6}
             >
-              <View style={[styles.menuIconBg, { backgroundColor: theme.surfaceSecondary }]}>
-                <Ionicons name={item.icon} size={20} color={theme.textSecondary} />
+              <View style={[styles.menuIconBg, { backgroundColor: colors.surfaceSecondary }]}>
+                <Ionicons name={item.icon} size={20} color={colors.textSecondary} />
               </View>
-              <Text style={[styles.menuLabel, { color: theme.text }]}>{item.label}</Text>
-              <Ionicons name="chevron-forward" size={18} color={theme.textTertiary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Logout */}
         <TouchableOpacity
-          style={[styles.logoutButton, { backgroundColor: '#FEF2F2', borderColor: '#FECACA' }]}
+          style={[styles.logoutButton, { backgroundColor: isDark ? '#331e1e' : '#FEF2F2', borderColor: isDark ? '#7f1d1d' : '#FECACA' }]}
           onPress={logout}
           activeOpacity={0.7}
         >

@@ -1,10 +1,10 @@
 import { BorderRadius, Colors, Spacing, SubjectColors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Chapter, getChaptersByCourse } from '@/services/chapters';
 import { Course, getCourseById } from '@/services/courses';
 import { getCourseProgress, Progress } from '@/services/progress';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -19,8 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const { theme, colors, isDark } = useTheme();
 
   const [course, setCourse] = useState<Course | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -53,7 +52,7 @@ export default function CourseDetailScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -62,23 +61,24 @@ export default function CourseDetailScreen() {
   const subjectColor = SubjectColors[course?.subject || 'default'] || SubjectColors.default;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen options={{ headerShown: false }} />
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]} numberOfLines={1}>
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
           {course?.title}
         </Text>
         <TouchableOpacity style={styles.moreBtn}>
-          <Ionicons name="bookmark-outline" size={22} color={theme.text} />
+          <Ionicons name="bookmark-outline" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Course Info */}
-        <View style={[styles.infoCard, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
           <View style={[styles.courseIcon, { backgroundColor: subjectColor.bg }]}>
             <Ionicons
               name={
@@ -92,18 +92,18 @@ export default function CourseDetailScreen() {
               color={subjectColor.text}
             />
           </View>
-          <Text style={[styles.courseTitle, { color: theme.text }]}>{course?.title}</Text>
-          <Text style={[styles.courseSubtitle, { color: theme.textSecondary }]}>{course?.subtitle}</Text>
+          <Text style={[styles.courseTitle, { color: colors.text }]}>{course?.title}</Text>
+          <Text style={[styles.courseSubtitle, { color: colors.textSecondary }]}>{course?.subtitle}</Text>
           {course?.description && (
-            <Text style={[styles.courseDesc, { color: theme.textSecondary }]}>{course.description}</Text>
+            <Text style={[styles.courseDesc, { color: colors.textSecondary }]}>{course.description}</Text>
           )}
           {progress && (
             <View style={styles.progressSection}>
               <View style={styles.progressRow}>
-                <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Progress</Text>
+                <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>Progress</Text>
                 <Text style={[styles.progressPercent, { color: Colors.primary }]}>{progress.percentage}%</Text>
               </View>
-              <View style={[styles.progressBarBg, { backgroundColor: theme.progressBg }]}>
+              <View style={[styles.progressBarBg, { backgroundColor: colors.progressBg }]}>
                 <View style={[styles.progressBarFill, {
                   width: `${progress.percentage}%`,
                   backgroundColor: Colors.primary,
@@ -114,13 +114,13 @@ export default function CourseDetailScreen() {
         </View>
 
         {/* Chapters List */}
-        <Text style={[styles.chaptersTitle, { color: theme.text }]}>
+        <Text style={[styles.chaptersTitle, { color: colors.text }]}>
           Chapters ({chapters.length})
         </Text>
         {chapters.sort((a, b) => a.order - b.order).map((chapter, index) => (
           <TouchableOpacity
             key={chapter._id}
-            style={[styles.chapterItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            style={[styles.chapterItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => router.push(`/chapter/${chapter._id}`)}
             activeOpacity={0.7}
           >
@@ -128,12 +128,12 @@ export default function CourseDetailScreen() {
               <Text style={[styles.chapterNumberText, { color: subjectColor.text }]}>{chapter.order}</Text>
             </View>
             <View style={styles.chapterInfo}>
-              <Text style={[styles.chapterTitle, { color: theme.text }]}>{chapter.title}</Text>
-              <Text style={[styles.chapterMeta, { color: theme.textTertiary }]}>
+              <Text style={[styles.chapterTitle, { color: colors.text }]}>{chapter.title}</Text>
+              <Text style={[styles.chapterMeta, { color: colors.textTertiary }]}>
                 {chapter.readingTime || `${Math.ceil((chapter.content?.length || 500) / 200)} min read`}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.textTertiary} />
+            <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
           </TouchableOpacity>
         ))}
 
