@@ -1,98 +1,386 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { BorderRadius, Colors, Spacing, SubjectColors } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DashboardData, getDashboard } from '@/services/dashboard';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    Dimensions,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { user } = useAuth();
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadDashboard = async () => {
+    try {
+      const data = await getDashboard();
+      setDashboard(data);
+    } catch (error) {
+      console.error('Failed to load dashboard:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboard();
+    setRefreshing(false);
+  };
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const examReadiness = dashboard?.examReadiness ?? 0;
+
+  // Mock weekly study hours for chart
+  const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  const studyData = [3, 4, 6, 5, 7, 4, 2];
+  const maxStudy = Math.max(...studyData);
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity>
+            <Ionicons name="menu" size={26} color={theme.text} />
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Text style={[styles.greeting, { color: theme.text }]}>
+              Welcome back, {user?.name?.split(' ')[0] || 'Student'}!
+            </Text>
+            <Text style={[styles.dateText, { color: theme.textSecondary }]}>{dateStr}</Text>
+          </View>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={[styles.notifButton, { backgroundColor: theme.surfaceSecondary }]}>
+              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+            </TouchableOpacity>
+            <View style={[styles.avatarCircle, { backgroundColor: Colors.primary }]}>
+              <Text style={styles.avatarText}>{user?.name?.[0] || 'S'}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Exam Readiness Card */}
+        <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}>
+          <View style={styles.examHeader}>
+            <View>
+              <Text style={[styles.examTitle, { color: theme.text }]}>Exam Readiness</Text>
+              <Text style={[styles.examSubtitle, { color: theme.textSecondary }]}>You're doing great!</Text>
+            </View>
+            <View style={[styles.examIconBg, { backgroundColor: '#EEF2FF' }]}>
+              <Ionicons name="school" size={20} color={Colors.primary} />
+            </View>
+          </View>
+          <View style={styles.examRingContainer}>
+            <View style={styles.ringOuter}>
+              <View style={[styles.ringTrack, { borderColor: theme.progressBg }]} />
+              <View style={[styles.ringProgress, {
+                borderColor: Colors.primary,
+                borderTopColor: 'transparent',
+                borderRightColor: examReadiness > 25 ? Colors.primary : 'transparent',
+                borderBottomColor: examReadiness > 50 ? Colors.primary : 'transparent',
+                borderLeftColor: examReadiness > 75 ? Colors.primary : 'transparent',
+                transform: [{ rotate: `${(examReadiness / 100) * 360}deg` }],
+              }]} />
+              <View style={[styles.ringInner, { backgroundColor: theme.surface }]}>
+                <Text style={[styles.ringPercent, { color: Colors.primary }]}>{examReadiness}%</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.examFooter}>
+            <View style={[styles.changeBadge, { backgroundColor: '#ECFDF5' }]}>
+              <Text style={{ color: '#22C55E', fontSize: 13, fontWeight: '600' }}>+12% from last week</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Continue Reading */}
+        {dashboard?.continueReading && (
+          <TouchableOpacity
+            style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}
+            onPress={() => router.push(`/chapter/${dashboard.continueReading.chapter?._id}`)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.readingHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                {dashboard.continueReading.chapter?.title || 'Bab 3: Biologi Sel'}
+              </Text>
+              <TouchableOpacity>
+                <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 14 }}>Continue Reading →</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.readingContent, { color: theme.textSecondary }]} numberOfLines={3}>
+              {dashboard.continueReading.chapter?.content ||
+                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'}
+            </Text>
+            <View style={styles.readingMeta}>
+              <Text style={{ color: Colors.primary, fontSize: 13, fontWeight: '600' }}>
+                Chapter {dashboard.continueReading.chapter?.order || 3}
+              </Text>
+              <Text style={{ color: theme.textTertiary, fontSize: 13 }}>
+                {dashboard.continueReading.chapter?.readingTime || '15 min read'}
+              </Text>
+            </View>
+            <View style={styles.progressBarContainer}>
+              <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Progress</Text>
+              <View style={styles.progressBarRow}>
+                <View style={[styles.progressBarBg, { backgroundColor: theme.progressBg }]}>
+                  <View
+                    style={[styles.progressBarFill, {
+                      width: `${dashboard.continueReading.progress || 45}%`,
+                      backgroundColor: Colors.primary,
+                    }]}
+                  />
+                </View>
+                <Text style={[styles.progressPercent, { color: theme.textSecondary }]}>
+                  {dashboard.continueReading.progress || 45}%
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {/* Continue Learning */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Continue Learning</Text>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/courses')}>
+            <Text style={{ color: theme.textTertiary, fontSize: 14 }}>View All</Text>
+          </TouchableOpacity>
+        </View>
+        {(dashboard?.continueLearning || []).slice(0, 3).map((item, index) => {
+          const subject = item.course?.subject || 'default';
+          const subjectColor = SubjectColors[subject] || SubjectColors.default;
+          return (
+            <TouchableOpacity
+              key={item.course?._id || index}
+              style={[styles.learningItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => router.push(`/course/${item.course?._id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.subjectIcon, { backgroundColor: subjectColor.bg }]}>
+                <Ionicons
+                  name={
+                    subject === 'Mathematics' ? 'calculator' :
+                    subject === 'Biology' ? 'leaf' :
+                    subject === 'Chemistry' ? 'flask' :
+                    subject === 'Physics' ? 'rocket' :
+                    'book'
+                  }
+                  size={20}
+                  color={subjectColor.text}
+                />
+              </View>
+              <View style={styles.learningInfo}>
+                <Text style={[styles.learningTitle, { color: theme.text }]}>{item.course?.title}</Text>
+                <View style={[styles.learningProgressBg, { backgroundColor: theme.progressBg }]}>
+                  <View
+                    style={[styles.learningProgressFill, {
+                      width: `${item.percentage}%`,
+                      backgroundColor: subjectColor.text,
+                    }]}
+                  />
+                </View>
+              </View>
+              <Text style={[styles.learningPercent, { color: theme.textSecondary }]}>{item.percentage}%</Text>
+              <TouchableOpacity>
+                <Ionicons name="ellipsis-vertical" size={18} color={theme.textTertiary} />
+              </TouchableOpacity>
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Study Hours */}
+        <View style={[styles.card, { backgroundColor: theme.surface, shadowColor: theme.cardShadow, marginTop: Spacing.xl }]}>
+          <View style={styles.studyHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Study Hours</Text>
+            <View style={[styles.weeklyBadge, { backgroundColor: theme.surfaceSecondary }]}>
+              <Text style={{ color: theme.textSecondary, fontSize: 12, fontWeight: '600' }}>Weekly ▾</Text>
+            </View>
+          </View>
+          <View style={styles.chartContainer}>
+            {weekDays.map((day, i) => (
+              <View key={i} style={styles.barColumn}>
+                <View style={[styles.barBg, { backgroundColor: theme.progressBg }]}>
+                  <View style={[styles.barFill, {
+                    height: `${(studyData[i] / maxStudy) * 100}%`,
+                    backgroundColor: i === 2 ? Colors.primary : Colors.primaryLight,
+                    borderRadius: 4,
+                  }]} />
+                </View>
+                <Text style={[styles.barLabel, {
+                  color: i === 2 ? Colors.primary : theme.textTertiary,
+                  fontWeight: i === 2 ? '700' : '500',
+                }]}>{day}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: { flex: 1 },
+  scrollContent: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: Spacing.xl,
+    gap: Spacing.md,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  headerCenter: { flex: 1 },
+  greeting: { fontSize: 20, fontWeight: '700' },
+  dateText: { fontSize: 13, marginTop: 2 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  notifButton: {
+    width: 38, height: 38, borderRadius: 19,
+    justifyContent: 'center', alignItems: 'center',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  avatarCircle: {
+    width: 38, height: 38, borderRadius: 19,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  avatarText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  card: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    marginBottom: Spacing.lg,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  examHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  examTitle: { fontSize: 17, fontWeight: '700' },
+  examSubtitle: { fontSize: 13, marginTop: 2 },
+  examIconBg: {
+    width: 40, height: 40, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  examRingContainer: { alignItems: 'center', marginVertical: Spacing.xl },
+  ringOuter: {
+    width: 120, height: 120,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  ringTrack: {
     position: 'absolute',
+    width: 120, height: 120, borderRadius: 60,
+    borderWidth: 10,
   },
+  ringProgress: {
+    position: 'absolute',
+    width: 120, height: 120, borderRadius: 60,
+    borderWidth: 10,
+  },
+  ringInner: {
+    width: 92, height: 92, borderRadius: 46,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  ringPercent: { fontSize: 28, fontWeight: '800' },
+  examFooter: { alignItems: 'center' },
+  changeBadge: {
+    paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+  },
+  readingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  sectionTitle: { fontSize: 17, fontWeight: '700' },
+  readingContent: { fontSize: 14, lineHeight: 21, marginBottom: Spacing.md },
+  readingMeta: {
+    flexDirection: 'row', gap: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  progressBarContainer: { marginTop: Spacing.xs },
+  progressLabel: { fontSize: 12, marginBottom: 4 },
+  progressBarRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  progressBarBg: { flex: 1, height: 6, borderRadius: 3 },
+  progressBarFill: { height: 6, borderRadius: 3 },
+  progressPercent: { fontSize: 12, fontWeight: '600', width: 32 },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  learningItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  subjectIcon: {
+    width: 44, height: 44, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  learningInfo: { flex: 1, gap: 6 },
+  learningTitle: { fontSize: 15, fontWeight: '600' },
+  learningProgressBg: { height: 5, borderRadius: 3 },
+  learningProgressFill: { height: 5, borderRadius: 3 },
+  learningPercent: { fontSize: 13, fontWeight: '600', marginRight: 4 },
+  studyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  weeklyBadge: {
+    paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 120,
+  },
+  barColumn: { alignItems: 'center', flex: 1, gap: 6 },
+  barBg: {
+    width: 28, height: '100%', borderRadius: 6,
+    justifyContent: 'flex-end', overflow: 'hidden',
+  },
+  barFill: { width: '100%' },
+  barLabel: { fontSize: 12 },
 });

@@ -1,42 +1,71 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * EduFocus Theme Colors & Design Tokens
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
+  primary: '#4A6CF7',
+  primaryDark: '#3B5DE7',
+  primaryLight: '#6B8AFF',
+  accent: '#22C55E',
+  accentLight: '#4ADE80',
+
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#1E293B',
+    textSecondary: '#64748B',
+    textTertiary: '#94A3B8',
+    background: '#F8FAFC',
+    surface: '#FFFFFF',
+    surfaceSecondary: '#F1F5F9',
+    border: '#E2E8F0',
+    tint: '#4A6CF7',
+    icon: '#64748B',
+    tabIconDefault: '#94A3B8',
+    tabIconSelected: '#4A6CF7',
+    cardShadow: 'rgba(0, 0, 0, 0.06)',
+    success: '#22C55E',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    progressBg: '#E2E8F0',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#F1F5F9',
+    textSecondary: '#94A3B8',
+    textTertiary: '#64748B',
+    background: '#0F172A',
+    surface: '#1E293B',
+    surfaceSecondary: '#334155',
+    border: '#334155',
+    tint: '#6B8AFF',
+    icon: '#94A3B8',
+    tabIconDefault: '#64748B',
+    tabIconSelected: '#6B8AFF',
+    cardShadow: 'rgba(0, 0, 0, 0.3)',
+    success: '#4ADE80',
+    warning: '#FBBF24',
+    error: '#F87171',
+    progressBg: '#334155',
   },
+};
+
+// Subject icon colors for course cards
+export const SubjectColors: Record<string, { bg: string; text: string }> = {
+  Mathematics: { bg: '#EEF2FF', text: '#4A6CF7' },
+  Biology: { bg: '#F0FDF4', text: '#22C55E' },
+  Chemistry: { bg: '#FFF7ED', text: '#F59E0B' },
+  Physics: { bg: '#FDF2F8', text: '#EC4899' },
+  History: { bg: '#FFFBEB', text: '#D97706' },
+  English: { bg: '#EFF6FF', text: '#3B82F6' },
+  default: { bg: '#F1F5F9', text: '#64748B' },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    sans: 'System',
+    serif: 'Georgia',
+    rounded: 'System',
+    mono: 'Menlo',
   },
   default: {
     sans: 'normal',
@@ -47,7 +76,25 @@ export const Fonts = Platform.select({
   web: {
     sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    rounded: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+};
+
+export const BorderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  full: 9999,
+};

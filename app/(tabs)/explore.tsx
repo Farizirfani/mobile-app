@@ -1,112 +1,99 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import {
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+export default function ExploreScreen() {
+  const { user } = useAuth();
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
 
-export default function TabTwoScreen() {
+  const myStuffItems = [
+    { icon: 'bookmark' as const, label: 'Bookmarks', desc: 'Saved items', color: '#4A6CF7', bg: '#EEF2FF' },
+    { icon: 'document-text' as const, label: 'Notes', desc: 'Your study notes', color: '#22C55E', bg: '#F0FDF4' },
+    { icon: 'trophy' as const, label: 'Quiz Results', desc: 'Your scores', color: '#F59E0B', bg: '#FFF7ED' },
+    { icon: 'stats-chart' as const, label: 'Progress', desc: 'Track progress', color: '#EC4899', bg: '#FDF2F8' },
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <Text style={[styles.pageTitle, { color: theme.text }]}>My Stuff</Text>
+        <Text style={[styles.pageSubtitle, { color: theme.textSecondary }]}>
+          Quick access to your learning materials
+        </Text>
+
+        <View style={styles.grid}>
+          {myStuffItems.map((item) => (
+            <TouchableOpacity
+              key={item.label}
+              style={[styles.gridItem, { backgroundColor: theme.surface, shadowColor: theme.cardShadow }]}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.gridIconBg, { backgroundColor: item.bg }]}>
+                <Ionicons name={item.icon} size={26} color={item.color} />
+              </View>
+              <Text style={[styles.gridLabel, { color: theme.text }]}>{item.label}</Text>
+              <Text style={[styles.gridDesc, { color: theme.textSecondary }]}>{item.desc}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Recent Activity placeholder */}
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
+        <View style={[styles.emptyState, { backgroundColor: theme.surface }]}>
+          <Ionicons name="time-outline" size={40} color={theme.textTertiary} />
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+            Your recent activity will appear here
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
+  container: { flex: 1 },
+  scrollContent: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md },
+  pageTitle: { fontSize: 26, fontWeight: '800', marginBottom: 4 },
+  pageSubtitle: { fontSize: 14, marginBottom: Spacing.xxl },
+  grid: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    marginBottom: Spacing.xxl,
   },
+  gridItem: {
+    width: '47%',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  gridIconBg: {
+    width: 52, height: 52, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  gridLabel: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
+  gridDesc: { fontSize: 13 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: Spacing.md },
+  emptyState: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xxxl,
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  emptyText: { fontSize: 14, textAlign: 'center' },
 });
